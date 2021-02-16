@@ -33,8 +33,8 @@ class Game
     @frames[num].first_shot.mark == 'X'
   end
 
-  def next_strike?(num)
-    @frames[num + 1].first_shot.mark == 'X'
+  def continue_strike?(num)
+    @frames[num].first_shot.mark == 'X' && @frames[num + 1].first_shot.mark == 'X'
   end
 
   def supea?(num)
@@ -56,10 +56,10 @@ class Game
     bonus = 0
     if num == 9
       bonus += 0
-    elsif num == 8 && strike?(num) && next_strike?(num)
+    elsif num == 8 && continue_strike?(num)
       bonus += 10 + @frames[num + 1].second_shot.score
 
-    elsif strike?(num) && next_strike?(num)
+    elsif continue_strike?(num)
       bonus += 10 + @frames[num + 2].first_shot.score
 
     elsif strike?(num)
