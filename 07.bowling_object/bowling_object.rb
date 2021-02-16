@@ -3,6 +3,10 @@
 
 class Game
   def initialize(score_text)
+    create_frame(score_text)
+  end
+
+  def create_frame(score_text)
     @frames = []
     frame = []
 
