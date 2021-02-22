@@ -6,84 +6,84 @@ class Game
     create_frame(score_text)
   end
 
+  def score
+    point = 0
+    10.times do |index|
+      point += @frames[index].frame_score
+      point += calc_bonus_score(index)
+    end
+    point
+  end
+
+  private
+
   def create_frame(score_text)
     @frames = []
     frame = []
 
     score_text.chars.each do |s|
       frame << s
-      next unless @frames.size < 9
+      if @frames.size < 9
 
-      if frame.size >= 2 || s == 'X'
-        @frames << Frame.new(frame[0], frame[1])
-        frame.clear
+        if frame.size >= 2 || s == 'X'
+          @frames << Frame.new(frame[0], frame[1])
+          frame.clear
+        end
       end
     end
     # 最終フレームは3投いれる
     @frames << Frame.new(frame[0], frame[1], frame[2])
   end
 
-  # フレームごとの通常スコア
-  def calc_frame_score(num)
-    target_frame = @frames[num]
-    target_frame.frame_score
-  end
-
-  def strike?(num)
-    @frames[num].first_shot.mark == 'X'
-  end
-
-  def continue_strike?(num)
-    @frames[num].first_shot.mark == 'X' && @frames[num + 1].first_shot.mark == 'X'
-  end
-
-  def supea?(num)
-    @frames[num].first_shot.score + @frames[num].second_shot.score == 10
-  end
-
-  # 全てのフレームの合計
-  def score
-    point = 0
-    10.times.each do |num|
-      point += calc_frame_score(num)
-      point += calc_bonus_score(num)
-    end
-    point
-  end
-
-  # ボーナス得点の計算
-  def calc_bonus_score(num)
+  def calc_bonus_score(index)
     bonus = 0
-    if num == 9
-      bonus += 0
-    elsif num == 8 && continue_strike?(num)
-      bonus += 10 + @frames[num + 1].second_shot.score
+    if index == 9
+      return 0
+    end
 
-    elsif continue_strike?(num)
-      bonus += 10 + @frames[num + 2].first_shot.score
+    if index == 8 && double_strike?(index)
+      return bonus += 10 + @frames[index + 1].shot2.score
+    end
 
-    elsif strike?(num)
-      bonus += @frames[num + 1].first_shot.score + @frames[num + 1].second_shot.score
+    if double_strike?(index)
+      return bonus += 10 + @frames[index + 2].shot1.score
+    end
 
-    elsif supea?(num)
-      bonus += @frames[num + 1].first_shot.score
+    if strike?(index)
+      return bonus += @frames[index + 1].shot1.score + @frames[index + 1].shot2.score
+    end
+
+    if spare?(index)
+      return bonus += @frames[index + 1].shot1.score
     end
     bonus
   end
+
+  def strike?(index)
+    @frames[index].shot1.mark == 'X'
+  end
+
+  def double_strike?(index)
+    @frames[index].shot1.mark == 'X' && @frames[index + 1].shot1.mark == 'X'
+  end
+
+  def spare?(index)
+    @frames[index].shot1.score + @frames[index].shot2.score == 10
+  end
+
 end
 
 class Frame
-  attr_reader :first_shot, :second_shot, :third_shot
+  attr_reader :shot1, :shot2, :shot3
 
   def initialize(first_mark, second_mark = nil, third_mark = nil)
-    @first_shot = Shot.new(first_mark)
-    @second_shot = Shot.new(second_mark)
-    @third_shot = Shot.new(third_mark)
+    @shot1 = Shot.new(first_mark)
+    @shot2 = Shot.new(second_mark)
+    @shot3 = Shot.new(third_mark)
   end
 
-  # ボーナス加点を含まないフレームごとのスコア
   def frame_score
-    [first_shot.score, second_shot.score, third_shot.score].sum
+    [shot1.score, shot2.score, shot3.score].sum
   end
 end
 
@@ -94,13 +94,10 @@ class Shot
     @mark = mark
   end
 
-  # 文字列を整数に変換
   def score
-    return 10 if mark == 'X'
-
-    mark.to_i
+    mark == 'X' ? 10 : mark.to_i
   end
 end
 
 game = Game.new(ARGV[0])
-p game.score
+puts game.score
