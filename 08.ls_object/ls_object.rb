@@ -74,9 +74,8 @@ class LsCommands
   end
 
   def l_option_detail_output
-    p file_type_atribute = file_type
-    p permission(@data[0][1..3])
-    p file_type_atribute << permission(@data[0][1..3])
+    file_type_atribute = file_type
+    file_type_atribute << permission(@data[0][1..3])
     @data[0] = file_type_atribute
     puts @data.join(' ')
   end
